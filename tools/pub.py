@@ -1,6 +1,6 @@
 import json, sys
 # usage: python3 pub.py <full data.json from build.py> <public.json>
-# 公開版只留：事項（有狀態的項目）、所屬活動、期限、狀態、負責人；不含任何內容與細節
+# 公開版只留：事項（有狀態或有負責人的項目）、所屬活動、期限、狀態、負責人；不含任何內容與細節
 src, out = sys.argv[1], sys.argv[2]
 D = json.load(open(src, encoding='utf-8'))
 nodes = D['nodes']
@@ -15,7 +15,8 @@ def walk(p):
 walk('')
 acts = [n for n in nodes if n.get('kind') == 'activity']
 act_ids = {a['id'] for a in acts}
-tasks = [n for n in nodes if n.get('kind') == 'item' and n.get('status') and n.get('act') in act_ids]
+# 事項＝有狀態或有負責人的項目（沒填狀態的當作未開始）
+tasks = [n for n in nodes if n.get('kind') == 'item' and (n.get('status') or n.get('owners')) and n.get('act') in act_ids]
 pub = {
     'generatedAt': D.get('generatedAt', ''),
     'members': [{'id': m['id'], 'name': m['name'], 'order': m.get('order', 0)} for m in D['members']],
